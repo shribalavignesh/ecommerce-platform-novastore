@@ -1,0 +1,14 @@
+{
+  "name": "ecommerce-platform-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack E-Commerce Web Application with product catalog, cart, checkout, role-based auth, and live order tracking.",
+  "scripts": {
+    "start:backend": "node backend/server.js",
+    "start:frontend": "cd frontend && npm.cmd run dev",
+    "seed": "node backend/database/seed.js",
+    "test": "node backend/test-api.js",
+    "build": "cd frontend && npm.cmd run build"
+  },
+  "author": "Full-Stack Software Engineer",
+  "license": "MIT"
+}
