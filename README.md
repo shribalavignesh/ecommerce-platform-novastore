@@ -8,7 +8,7 @@ An enterprise-grade, production-ready full-stack E-Commerce web application buil
 - **Lead Developer:** **Shri Bala Vignesh A R**
 - **Contact Number:** **+91 63815 66225** (`6381566225`)
 - **GitHub Profile:** [https://github.com/shribalavignesh](https://github.com/shribalavignesh)
-- **Repository Reference:** [https://github.com/shribalavignesh](https://github.com/shribalavignesh)
+- **Repository Link:** [https://github.com/shribalavignesh/ecommerce-platform-novastore](https://github.com/shribalavignesh/ecommerce-platform-novastore)
 
 ---
 
