@@ -4,6 +4,14 @@ An enterprise-grade, production-ready full-stack E-Commerce web application buil
 
 ---
 
+## 👨‍💻 Developer & Project Reference
+- **Lead Developer:** **Shri Bala Vignesh A R**
+- **Contact Number:** **+91 63815 66225** (`6381566225`)
+- **GitHub Profile:** [https://github.com/shribalavignesh](https://github.com/shribalavignesh)
+- **Repository Reference:** [https://github.com/shribalavignesh](https://github.com/shribalavignesh)
+
+---
+
 ## 📋 Project Specifications & Rubric Compliance
 
 | Requirement from Specification | Implementation Status | Technical Details |
