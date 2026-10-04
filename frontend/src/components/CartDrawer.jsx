@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, Check, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from './NotificationToast';
+import { formatINR } from '../utils/format';
 
 export default function CartDrawer({ onProceedToCheckout }) {
   const {
@@ -38,7 +39,7 @@ export default function CartDrawer({ onProceedToCheckout }) {
     }
   }
 
-  const freeShippingThreshold = 75;
+  const freeShippingThreshold = 999;
   const progressToFreeShipping = Math.min(100, (subtotal / freeShippingThreshold) * 100);
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
 
@@ -76,7 +77,7 @@ export default function CartDrawer({ onProceedToCheckout }) {
                 <Truck className="w-4 h-4 text-blue-600" />
                 {subtotal >= freeShippingThreshold || coupon?.freeShipping
                   ? '🎉 You unlocked FREE Express Shipping!'
-                  : `Add $${remainingForFreeShipping.toFixed(2)} more for Free Shipping!`}
+                  : `Add ${formatINR(remainingForFreeShipping)} more for Free Shipping!`}
               </span>
               <span>{progressToFreeShipping.toFixed(0)}%</span>
             </div>
@@ -97,7 +98,7 @@ export default function CartDrawer({ onProceedToCheckout }) {
                 </div>
                 <p className="font-semibold text-slate-800 text-base mb-1">Your cart is empty</p>
                 <p className="text-xs text-slate-500 max-w-xs mb-6">
-                  Explore our curated tech, apparel, and lifestyle collection to find your next favorite item.
+                  Explore trending electronics, ethnic apparel, and home essentials.
                 </p>
                 <button
                   onClick={() => setIsDrawerOpen(false)}
@@ -130,7 +131,7 @@ export default function CartDrawer({ onProceedToCheckout }) {
 
                     <div className="flex items-center justify-between mt-2">
                       <span className="font-bold text-slate-900 text-sm">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatINR(item.price * item.quantity)}
                       </span>
 
                       {/* Quantity stepper */}
@@ -168,7 +169,7 @@ export default function CartDrawer({ onProceedToCheckout }) {
                   <Tag className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Promo code (SAVE20, WELCOME10)"
+                    placeholder="Promo code (SAVE20, SAVE200)"
                     value={couponCode}
                     onChange={e => setCouponCode(e.target.value)}
                     className="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg uppercase tracking-wider bg-white focus:outline-none focus:ring-1 focus:ring-blue-600"
@@ -200,27 +201,27 @@ export default function CartDrawer({ onProceedToCheckout }) {
               <div className="space-y-1.5 text-xs text-slate-600 pt-1">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-medium text-slate-900">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900">{formatINR(subtotal)}</span>
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-700 font-medium">
                     <span>Discount</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatINR(discountAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="font-medium text-slate-900">
-                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : `$${shippingFee.toFixed(2)}`}
+                    {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatINR(shippingFee)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Estimated Tax (8%)</span>
-                  <span className="font-medium text-slate-900">${tax.toFixed(2)}</span>
+                  <span>Estimated GST (5%)</span>
+                  <span className="font-medium text-slate-900">{formatINR(tax)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
-                  <span>Total</span>
-                  <span>${totalAmount.toFixed(2)}</span>
+                  <span>Total Payable</span>
+                  <span>{formatINR(totalAmount)}</span>
                 </div>
               </div>
 

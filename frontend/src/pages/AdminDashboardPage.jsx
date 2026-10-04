@@ -17,10 +17,12 @@ import {
   RefreshCw,
   X,
   Truck,
-  Eye
+  Eye,
+  Store
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/NotificationToast';
+import { formatINR } from '../utils/format';
 
 export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
   const { user, token, isAdmin, loginAsDemo } = useAuth();
@@ -47,10 +49,15 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPrice, setFormPrice] = useState('');
+  const [formOriginalPrice, setFormOriginalPrice] = useState('');
   const [formCategory, setFormCategory] = useState('electronics');
+  const [formBrand, setFormBrand] = useState('NovaStore');
   const [formImage, setFormImage] = useState('');
   const [formStock, setFormStock] = useState('15');
   const [formFeatured, setFormFeatured] = useState(false);
+  const [formAmazonUrl, setFormAmazonUrl] = useState('');
+  const [formFlipkartUrl, setFormFlipkartUrl] = useState('');
+  const [formMeeshoUrl, setFormMeeshoUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -119,10 +126,15 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
     setFormTitle('');
     setFormDesc('');
     setFormPrice('');
+    setFormOriginalPrice('');
     setFormCategory('electronics');
+    setFormBrand('NovaStore');
     setFormImage('https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=800&q=80');
     setFormStock('20');
     setFormFeatured(false);
+    setFormAmazonUrl('');
+    setFormFlipkartUrl('');
+    setFormMeeshoUrl('');
     setIsProductModalOpen(true);
   }
 
@@ -132,10 +144,15 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
     setFormTitle(prod.title);
     setFormDesc(prod.description);
     setFormPrice(prod.price);
+    setFormOriginalPrice(prod.original_price || '');
     setFormCategory(prod.category);
+    setFormBrand(prod.brand || 'NovaStore');
     setFormImage(prod.image);
     setFormStock(prod.stock);
     setFormFeatured(!!prod.featured);
+    setFormAmazonUrl(prod.amazon_url || '');
+    setFormFlipkartUrl(prod.flipkart_url || '');
+    setFormMeeshoUrl(prod.meesho_url || '');
     setIsProductModalOpen(true);
   }
 
@@ -148,10 +165,15 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
       title: formTitle,
       description: formDesc,
       price: Number(formPrice),
+      original_price: formOriginalPrice ? Number(formOriginalPrice) : null,
       category: formCategory,
+      brand: formBrand,
       image: formImage,
       stock: Number(formStock),
-      featured: formFeatured
+      featured: formFeatured,
+      amazon_url: formAmazonUrl,
+      flipkart_url: formFlipkartUrl,
+      meesho_url: formMeeshoUrl
     };
 
     try {
@@ -315,7 +337,7 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">
-            ${stats ? stats.totalRevenue.toFixed(2) : '0.00'}
+            {formatINR(stats ? stats.totalRevenue : 0)}
           </div>
           <span className="text-[10px] text-emerald-600 font-semibold">Live Realized Revenue</span>
         </div>
@@ -441,7 +463,12 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
                         />
                         <div>
                           <p className="font-semibold text-slate-900 truncate max-w-xs">{prod.title}</p>
-                          <span className="text-[10px] text-slate-400">ID: #{prod.id}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-slate-400">ID: #{prod.id}</span>
+                            {prod.amazon_url && <span className="text-[9px] bg-amber-50 text-amber-800 font-bold px-1 rounded border border-amber-200">Amazon</span>}
+                            {prod.flipkart_url && <span className="text-[9px] bg-blue-50 text-blue-800 font-bold px-1 rounded border border-blue-200">Flipkart</span>}
+                            {prod.meesho_url && <span className="text-[9px] bg-pink-50 text-pink-800 font-bold px-1 rounded border border-pink-200">Meesho</span>}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -451,7 +478,7 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
                       </span>
                     </td>
                     <td className="py-3 px-4 font-bold text-slate-900">
-                      ${Number(prod.price).toFixed(2)}
+                      {formatINR(prod.price)}
                     </td>
                     <td className="py-3 px-4">
                       <span
@@ -554,7 +581,7 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
                       <p className="text-[10px] text-slate-500 truncate">{order.user_email}</p>
                     </td>
                     <td className="py-3 px-4 font-bold text-slate-900">
-                      ${Number(order.total_amount).toFixed(2)}
+                      {formatINR(order.total_amount)}
                     </td>
                     <td className="py-3 px-4">
                       <select
@@ -685,14 +712,38 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Price ($) *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Selling Price (₹) *</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
                     required
                     value={formPrice}
                     onChange={e => setFormPrice(e.target.value)}
-                    placeholder="149.99"
+                    placeholder="1499"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Original MRP (₹)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={formOriginalPrice}
+                    onChange={e => setFormOriginalPrice(e.target.value)}
+                    placeholder="2999"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Brand Name</label>
+                  <input
+                    type="text"
+                    value={formBrand}
+                    onChange={e => setFormBrand(e.target.value)}
+                    placeholder="e.g. boAt, Noise, Milton"
                     className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
                   />
                 </div>
@@ -715,12 +766,47 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
                   onChange={e => setFormCategory(e.target.value)}
                   className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
-                  <option value="electronics">Electronics & Gadgets</option>
+                  <option value="electronics">Electronics & Audio</option>
                   <option value="fashion">Fashion & Apparel</option>
-                  <option value="home">Home & Living</option>
-                  <option value="fitness">Sports & Outdoors</option>
+                  <option value="home">Home & Kitchen</option>
+                  <option value="fitness">Sports & Fitness</option>
                   <option value="accessories">Bags & Accessories</option>
                 </select>
+              </div>
+
+              {/* Multi-Platform Partner URLs */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-bold text-slate-800 block">External Marketplace Connections (Optional)</span>
+                <div>
+                  <label className="block text-[10px] font-semibold text-amber-800 mb-0.5">Amazon Product / Search Link</label>
+                  <input
+                    type="url"
+                    value={formAmazonUrl}
+                    onChange={e => setFormAmazonUrl(e.target.value)}
+                    placeholder="https://www.amazon.in/dp/..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-amber-200 rounded-lg focus:outline-none bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-blue-800 mb-0.5">Flipkart Product Link</label>
+                  <input
+                    type="url"
+                    value={formFlipkartUrl}
+                    onChange={e => setFormFlipkartUrl(e.target.value)}
+                    placeholder="https://www.flipkart.com/..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-blue-200 rounded-lg focus:outline-none bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-pink-800 mb-0.5">Meesho Product Link</label>
+                  <input
+                    type="url"
+                    value={formMeeshoUrl}
+                    onChange={e => setFormMeeshoUrl(e.target.value)}
+                    placeholder="https://www.meesho.com/..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-pink-200 rounded-lg focus:outline-none bg-white"
+                  />
+                </div>
               </div>
 
               <div>
@@ -812,7 +898,7 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
                   {inspectingOrder.items?.map(it => (
                     <div key={it.id} className="py-2 flex justify-between">
                       <span>{it.product_title} × {it.quantity}</span>
-                      <span className="font-bold">${(Number(it.product_price) * it.quantity).toFixed(2)}</span>
+                      <span className="font-bold">{formatINR(Number(it.product_price) * it.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -820,7 +906,7 @@ export default function AdminDashboardPage({ onTrackOrder, onOpenAuthModal }) {
 
               <div className="pt-3 border-t border-slate-100 flex justify-between font-bold text-sm text-slate-900">
                 <span>Grand Total:</span>
-                <span>${Number(inspectingOrder.total_amount).toFixed(2)}</span>
+                <span>{formatINR(inspectingOrder.total_amount)}</span>
               </div>
             </div>
 

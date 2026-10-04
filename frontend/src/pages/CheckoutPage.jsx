@@ -15,6 +15,7 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/NotificationToast';
+import { formatINR } from '../utils/format';
 
 export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
   const {
@@ -32,17 +33,17 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
 
   const [fullName, setFullName] = useState(user?.name || 'Alex Morgan');
   const [email, setEmail] = useState(user?.email || 'alex@demo.com');
-  const [phone, setPhone] = useState('+1 (555) 234-5678');
-  const [address, setAddress] = useState('742 Evergreen Terrace');
-  const [city, setCity] = useState('Seattle');
-  const [state, setState] = useState('WA');
-  const [zip, setZip] = useState('98101');
-  const [country, setCountry] = useState('United States');
+  const [phone, setPhone] = useState('+91 98765 43210');
+  const [address, setAddress] = useState('42, MG Road, Brigade Junction');
+  const [city, setCity] = useState('Bengaluru');
+  const [state, setState] = useState('Karnataka');
+  const [zip, setZip] = useState('560001');
+  const [country, setCountry] = useState('India');
 
   // Payment method
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [cardNumber, setCardNumber] = useState('4242 •••• •••• 4242');
-  const [cardExpiry, setCardExpiry] = useState('12/28');
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [cardNumber, setCardNumber] = useState('5520 •••• •••• 5555');
+  const [cardExpiry, setCardExpiry] = useState('09/29');
   const [cardCvc, setCardCvc] = useState('888');
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -135,12 +136,11 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
     setIsProcessing(true);
 
     try {
-      // Build order payload
       const shippingAddress = { fullName, email, phone, address, city, state, zip, country };
       const paymentMethodLabel =
-        paymentMethod === 'card' ? 'Credit Card (Visa •••• 4242)' :
-        paymentMethod === 'upi' ? 'UPI / QR Payment' :
-        paymentMethod === 'cod' ? 'Cash on Delivery' : 'Net Banking';
+        paymentMethod === 'upi' ? 'UPI / QR (PhonePe / GPay)' :
+        paymentMethod === 'card' ? 'Credit / Debit Card' :
+        paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Net Banking (NEFT/IMPS)';
 
       const payload = {
         items,
@@ -197,12 +197,12 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                 <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
                   1
                 </span>
-                <h3 className="font-bold text-slate-900 text-base">Shipping Information</h3>
+                <h3 className="font-bold text-slate-900 text-base">Delivery Address (India)</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Recipient Name *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
                   <input
                     type="text"
                     required
@@ -222,7 +222,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Street Address *</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Street / Flat / Area *</label>
                   <input
                     type="text"
                     required
@@ -253,7 +253,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Postal Code *</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">PIN Code *</label>
                     <input
                       type="text"
                       required
@@ -264,9 +264,10 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone (for delivery SMS) *</label>
                   <input
                     type="tel"
+                    required
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none"
@@ -288,18 +289,6 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod('card')}
-                  className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1.5 ${
-                    paymentMethod === 'card'
-                      ? 'border-blue-600 bg-blue-50/70 text-blue-900 font-bold'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5 text-blue-600" />
-                  <span className="text-xs">Credit Card</span>
-                </button>
-                <button
-                  type="button"
                   onClick={() => setPaymentMethod('upi')}
                   className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1.5 ${
                     paymentMethod === 'upi'
@@ -308,7 +297,19 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                   }`}
                 >
                   <QrCode className="w-5 h-5 text-purple-600" />
-                  <span className="text-xs">UPI / QR</span>
+                  <span className="text-xs">UPI / QR (PhonePe)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1.5 ${
+                    paymentMethod === 'card'
+                      ? 'border-blue-600 bg-blue-50/70 text-blue-900 font-bold'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  <span className="text-xs">Debit/Credit Card</span>
                 </button>
                 <button
                   type="button"
@@ -320,7 +321,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                   }`}
                 >
                   <Banknote className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs">Cash on Del.</span>
+                  <span className="text-xs">Cash on Delivery</span>
                 </button>
                 <button
                   type="button"
@@ -337,10 +338,20 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
               </div>
 
               {/* Dynamic Payment Body */}
+              {paymentMethod === 'upi' && (
+                <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-200 text-center">
+                  <p className="text-xs font-bold text-purple-900 mb-1">Instant UPI Payment</p>
+                  <p className="text-[11px] text-purple-700 mb-3">Scan and pay using PhonePe, Google Pay, or Paytm.</p>
+                  <div className="inline-block p-2 bg-white rounded-lg border border-purple-200 shadow-xs">
+                    <QrCode className="w-24 h-24 text-purple-900" />
+                  </div>
+                </div>
+              )}
+
               {paymentMethod === 'card' && (
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Card Number</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Card Number (Visa / Mastercard / RuPay)</label>
                     <div className="relative">
                       <CreditCard className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                       <input
@@ -353,7 +364,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Expiry Date</label>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Valid Thru (MM/YY)</label>
                       <input
                         type="text"
                         value={cardExpiry}
@@ -362,7 +373,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">Security CVC</label>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">CVV</label>
                       <input
                         type="password"
                         value={cardCvc}
@@ -374,27 +385,17 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                 </div>
               )}
 
-              {paymentMethod === 'upi' && (
-                <div className="bg-purple-50/60 p-4 rounded-xl border border-purple-200 text-center">
-                  <p className="text-xs font-bold text-purple-900 mb-1">Instant QR Code Payment</p>
-                  <p className="text-[11px] text-purple-700 mb-3">Scan with Google Pay, PhonePe, or Paytm during order confirmation.</p>
-                  <div className="inline-block p-2 bg-white rounded-lg border border-purple-200 shadow-xs">
-                    <QrCode className="w-20 h-20 text-purple-900" />
-                  </div>
-                </div>
-              )}
-
               {paymentMethod === 'cod' && (
                 <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200 text-xs text-emerald-900">
-                  <p className="font-bold mb-1">Pay with Cash upon Doorstep Delivery</p>
-                  <p className="text-[11px] text-emerald-700">Please prepare exact change of <span className="font-bold">${totalAmount.toFixed(2)}</span> at the time of delivery.</p>
+                  <p className="font-bold mb-1">Cash on Delivery (Doorstep Payment)</p>
+                  <p className="text-[11px] text-emerald-700">Please keep exact cash of <strong className="text-emerald-950 font-bold">{formatINR(totalAmount)}</strong> ready upon delivery by courier executive.</p>
                 </div>
               )}
 
               {paymentMethod === 'netbanking' && (
                 <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 text-xs text-amber-900">
-                  <p className="font-bold mb-1">Direct Bank Wire / Net Banking</p>
-                  <p className="text-[11px] text-amber-700">You will be redirected securely to authenticate with your bank portal after order placement.</p>
+                  <p className="font-bold mb-1">All Major Indian Banks Supported</p>
+                  <p className="text-[11px] text-amber-700">SBI, HDFC Bank, ICICI Bank, Axis Bank, Kotak Mahindra Bank.</p>
                 </div>
               )}
             </div>
@@ -404,7 +405,7 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
         {/* Right Order Summary Column */}
         <div className="lg:col-span-5">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24">
-            <h3 className="font-bold text-slate-900 text-base mb-4">Order Summary</h3>
+            <h3 className="font-bold text-slate-900 text-base mb-4">Price Details</h3>
 
             {/* Item list */}
             <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto pr-1 mb-4">
@@ -422,37 +423,37 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
                     </div>
                   </div>
                   <span className="font-bold text-slate-900 shrink-0">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {formatINR(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Calculations */}
+            {/* Calculations in INR */}
             <div className="space-y-2 text-xs text-slate-600 border-t border-slate-200 pt-3">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span className="font-medium text-slate-900">${subtotal.toFixed(2)}</span>
+                <span>Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} items)</span>
+                <span className="font-medium text-slate-900">{formatINR(subtotal)}</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-medium">
-                  <span>Discount</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
+                  <span>Special Discount</span>
+                  <span>-{formatINR(discountAmount)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping Fee</span>
+                <span>Delivery Charges</span>
                 <span className="font-medium text-slate-900">
-                  {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : `$${shippingFee.toFixed(2)}`}
+                  {shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE Delivery</span> : formatINR(shippingFee)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Sales Tax (8%)</span>
-                <span className="font-medium text-slate-900">${tax.toFixed(2)}</span>
+                <span>Estimated GST (5%)</span>
+                <span className="font-medium text-slate-900">{formatINR(tax)}</span>
               </div>
               <div className="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
                 <span>Total Amount</span>
-                <span>${totalAmount.toFixed(2)}</span>
+                <span>{formatINR(totalAmount)}</span>
               </div>
             </div>
 
@@ -464,13 +465,13 @@ export default function CheckoutPage({ onBackToStore, onOrderSuccess }) {
               className="w-full mt-6 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
             >
               <Lock className="w-4 h-4" />
-              <span>{isProcessing ? 'Processing Secure Payment...' : `Authorize & Place Order ($${totalAmount.toFixed(2)})`}</span>
+              <span>{isProcessing ? 'Processing Payment...' : `Place Order (${formatINR(totalAmount)})`}</span>
             </button>
 
             {/* Security Guarantee */}
             <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-500">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>256-Bit End-to-End Encrypted Checkout</span>
+              <span>100% Safe & Secure Online Payments</span>
             </div>
           </div>
         </div>

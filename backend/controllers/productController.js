@@ -2,7 +2,7 @@ const { queryAll, queryOne, execute } = require('../config/db');
 
 function getAllProducts(req, res) {
   try {
-    const { category, search, sortBy, minPrice, maxPrice, featured } = req.query;
+    const { category, search, sortBy, minPrice, maxPrice, featured, platform } = req.query;
 
     let sql = 'SELECT * FROM products WHERE 1=1';
     const params = [];
@@ -12,10 +12,22 @@ function getAllProducts(req, res) {
       params.push(category);
     }
 
+    if (platform && platform !== 'all') {
+      if (platform === 'amazon') {
+        sql += ' AND (amazon_url IS NOT NULL AND amazon_url != "")';
+      } else if (platform === 'flipkart') {
+        sql += ' AND (flipkart_url IS NOT NULL AND flipkart_url != "")';
+      } else if (platform === 'meesho') {
+        sql += ' AND (meesho_url IS NOT NULL AND meesho_url != "")';
+      } else if (platform === 'direct') {
+        sql += ' AND (amazon_url IS NULL OR amazon_url = "") AND (flipkart_url IS NULL OR flipkart_url = "")';
+      }
+    }
+
     if (search && search.trim() !== '') {
-      sql += ' AND (title LIKE ? OR description LIKE ?)';
+      sql += ' AND (title LIKE ? OR description LIKE ? OR brand LIKE ?)';
       const term = `%${search.trim()}%`;
-      params.push(term, term);
+      params.push(term, term, term);
     }
 
     if (minPrice) {
@@ -95,23 +107,41 @@ function getCategories(req, res) {
 
 function createProduct(req, res) {
   try {
-    const { title, description, price, category, image, stock, featured } = req.body;
+    const {
+      title,
+      description,
+      price,
+      original_price,
+      category,
+      image,
+      stock,
+      featured,
+      brand,
+      amazon_url,
+      flipkart_url,
+      meesho_url
+    } = req.body;
 
     if (!title || !description || price == null || !category || !image) {
       return res.status(400).json({ success: false, message: 'Missing required product fields.' });
     }
 
     const result = execute(
-      `INSERT INTO products (title, description, price, category, image, stock, rating, reviews_count, featured)
-       VALUES (?, ?, ?, ?, ?, ?, 5.0, 1, ?)`,
+      `INSERT INTO products (title, description, price, original_price, category, image, stock, rating, reviews_count, featured, brand, amazon_url, flipkart_url, meesho_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 5.0, 1, ?, ?, ?, ?, ?)`,
       [
         title.trim(),
         description.trim(),
         Number(price),
+        original_price ? Number(original_price) : Number(price) * 1.3,
         category.trim(),
         image.trim(),
         Number(stock) || 10,
-        featured ? 1 : 0
+        featured ? 1 : 0,
+        brand ? brand.trim() : 'NovaStore',
+        amazon_url ? amazon_url.trim() : '',
+        flipkart_url ? flipkart_url.trim() : '',
+        meesho_url ? meesho_url.trim() : ''
       ]
     );
 
@@ -136,24 +166,34 @@ function updateProduct(req, res) {
       title = existing.title,
       description = existing.description,
       price = existing.price,
+      original_price = existing.original_price,
       category = existing.category,
       image = existing.image,
       stock = existing.stock,
-      featured = existing.featured
+      featured = existing.featured,
+      brand = existing.brand,
+      amazon_url = existing.amazon_url,
+      flipkart_url = existing.flipkart_url,
+      meesho_url = existing.meesho_url
     } = req.body;
 
     execute(
       `UPDATE products
-       SET title = ?, description = ?, price = ?, category = ?, image = ?, stock = ?, featured = ?
+       SET title = ?, description = ?, price = ?, original_price = ?, category = ?, image = ?, stock = ?, featured = ?, brand = ?, amazon_url = ?, flipkart_url = ?, meesho_url = ?
        WHERE id = ?`,
       [
         title.trim(),
         description.trim(),
         Number(price),
+        original_price != null ? Number(original_price) : null,
         category.trim(),
         image.trim(),
         Number(stock),
         featured ? 1 : 0,
+        brand ? brand.trim() : 'NovaStore',
+        amazon_url ? amazon_url.trim() : '',
+        flipkart_url ? flipkart_url.trim() : '',
+        meesho_url ? meesho_url.trim() : '',
         id
       ]
     );

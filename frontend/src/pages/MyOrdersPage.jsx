@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Truck, ArrowRight, Clock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatINR } from '../utils/format';
 
 export default function MyOrdersPage({ onTrackOrder, onOpenAuthModal, onBackToStore }) {
   const { user, token, isAuthenticated } = useAuth();
@@ -120,7 +121,7 @@ export default function MyOrdersPage({ onTrackOrder, onOpenAuthModal, onBackToSt
                     Placed: {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                   <span className="font-bold text-slate-900 text-sm">
-                    ${Number(order.total_amount).toFixed(2)}
+                    {formatINR(order.total_amount)}
                   </span>
                 </div>
               </div>
@@ -140,12 +141,12 @@ export default function MyOrdersPage({ onTrackOrder, onOpenAuthModal, onBackToSt
                           {item.product_title}
                         </span>
                         <span className="text-slate-400 text-[11px]">
-                          Qty: {item.quantity} × ${Number(item.product_price).toFixed(2)}
+                          Qty: {item.quantity} × {formatINR(item.product_price)}
                         </span>
                       </div>
                     </div>
                     <span className="font-semibold text-slate-800">
-                      ${(Number(item.product_price) * item.quantity).toFixed(2)}
+                      {formatINR(Number(item.product_price) * item.quantity)}
                     </span>
                   </div>
                 ))}

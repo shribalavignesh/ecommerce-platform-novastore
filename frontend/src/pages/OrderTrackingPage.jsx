@@ -13,6 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useToast } from '../components/NotificationToast';
+import { formatINR } from '../utils/format';
 
 export default function OrderTrackingPage({ initialOrderId, onBackToStore }) {
   const [searchId, setSearchId] = useState(initialOrderId || 'ORD-2026-4401');
@@ -282,19 +283,19 @@ export default function OrderTrackingPage({ initialOrderId, onBackToStore }) {
               <div className="space-y-1 text-xs text-slate-600">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>${Number(order.subtotal).toFixed(2)}</span>
+                  <span>{formatINR(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax:</span>
-                  <span>${Number(order.tax).toFixed(2)}</span>
+                  <span>GST:</span>
+                  <span>{formatINR(order.tax)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Shipping:</span>
-                  <span>{order.shipping_fee === 0 ? 'FREE' : `$${Number(order.shipping_fee).toFixed(2)}`}</span>
+                  <span>Delivery:</span>
+                  <span>{order.shipping_fee === 0 ? 'FREE' : formatINR(order.shipping_fee)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-slate-900 text-sm pt-2 border-t border-slate-100">
                   <span>Total Paid:</span>
-                  <span>${Number(order.total_amount).toFixed(2)}</span>
+                  <span>{formatINR(order.total_amount)}</span>
                 </div>
               </div>
             </div>
@@ -314,11 +315,11 @@ export default function OrderTrackingPage({ initialOrderId, onBackToStore }) {
                     />
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">{item.product_title}</h4>
-                      <p className="text-[11px] text-slate-400">Qty: {item.quantity} × ${Number(item.product_price).toFixed(2)}</p>
+                      <p className="text-[11px] text-slate-400">Qty: {item.quantity} × {formatINR(item.product_price)}</p>
                     </div>
                   </div>
                   <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                    ${(Number(item.product_price) * item.quantity).toFixed(2)}
+                    {formatINR(Number(item.product_price) * item.quantity)}
                   </span>
                 </div>
               ))}

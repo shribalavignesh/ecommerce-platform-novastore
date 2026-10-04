@@ -91,16 +91,20 @@ export function CartProvider({ children }) {
       const c = { code: 'SAVE20', discountPercent: 20, description: '20% Off Entire Order' };
       setCoupon(c);
       return { success: true, message: 'Coupon SAVE20 applied! 20% discount granted.' };
-    } else if (clean === 'WELCOME10') {
-      const c = { code: 'WELCOME10', discountFixed: 10, description: '$10 Off Welcome Coupon' };
+    } else if (clean === 'SAVE200') {
+      const c = { code: 'SAVE200', discountFixed: 200, description: '₹200 Off Instant Voucher' };
       setCoupon(c);
-      return { success: true, message: 'Coupon WELCOME10 applied! $10 discount granted.' };
+      return { success: true, message: 'Coupon SAVE200 applied! ₹200 discount granted.' };
+    } else if (clean === 'WELCOME500') {
+      const c = { code: 'WELCOME500', discountFixed: 500, description: '₹500 Off Welcome Offer' };
+      setCoupon(c);
+      return { success: true, message: 'Coupon WELCOME500 applied! ₹500 discount granted.' };
     } else if (clean === 'FREESHIP') {
       const c = { code: 'FREESHIP', freeShipping: true, description: 'Free Express Shipping' };
       setCoupon(c);
       return { success: true, message: 'Coupon FREESHIP applied! Shipping is free.' };
     } else {
-      return { success: false, message: 'Invalid coupon code. Try SAVE20, WELCOME10, or FREESHIP' };
+      return { success: false, message: 'Invalid coupon code. Try SAVE20, SAVE200, or FREESHIP' };
     }
   }
 
@@ -108,7 +112,7 @@ export function CartProvider({ children }) {
     setCoupon(null);
   }
 
-  // Calculations
+  // Calculations in INR (₹)
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = Number(items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2));
 
@@ -121,9 +125,9 @@ export function CartProvider({ children }) {
     }
   }
 
-  const shippingFee = (subtotal >= 75 || subtotal === 0 || coupon?.freeShipping) ? 0 : 9.99;
+  const shippingFee = (subtotal >= 999 || subtotal === 0 || coupon?.freeShipping) ? 0 : 99;
   const taxableAmount = Math.max(0, subtotal - discountAmount);
-  const tax = Number((taxableAmount * 0.08).toFixed(2)); // 8% sales tax
+  const tax = Number((taxableAmount * 0.05).toFixed(2)); // 5% GST
   const totalAmount = Number((taxableAmount + tax + shippingFee).toFixed(2));
 
   return (

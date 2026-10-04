@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { X, Star, ShoppingBag, ShieldCheck, RotateCcw, Truck, Plus, Minus, ArrowRight } from 'lucide-react';
+import {
+  X,
+  Star,
+  ShoppingBag,
+  ShieldCheck,
+  RotateCcw,
+  Truck,
+  Plus,
+  Minus,
+  ArrowRight,
+  ExternalLink,
+  Store
+} from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from './NotificationToast';
+import { formatINR } from '../utils/format';
 
 export default function ProductDetailModal({ product, onClose, onBuyNow }) {
   const [quantity, setQuantity] = useState(1);
@@ -22,9 +35,15 @@ export default function ProductDetailModal({ product, onClose, onBuyNow }) {
     if (onBuyNow) onBuyNow();
   }
 
+  const discountPercent = product.original_price && product.original_price > product.price
+    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
+    : 0;
+
+  const hasExternalPlatforms = product.amazon_url || product.flipkart_url || product.meesho_url;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-3xl overflow-hidden relative max-h-[90vh] flex flex-col md:flex-row">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-3xl overflow-hidden relative max-h-[92vh] flex flex-col md:flex-row">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -41,11 +60,18 @@ export default function ProductDetailModal({ product, onClose, onBuyNow }) {
               alt={product.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            {product.featured ? (
-              <span className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
-                Featured
-              </span>
-            ) : null}
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+              {product.featured ? (
+                <span className="bg-amber-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                  Staff Pick
+                </span>
+              ) : null}
+              {discountPercent > 0 && (
+                <span className="bg-rose-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">
+                  {discountPercent}% OFF
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -68,31 +94,86 @@ export default function ProductDetailModal({ product, onClose, onBuyNow }) {
             </h2>
 
             <div className="flex items-baseline gap-3 mb-4">
-              <span className="text-2xl font-extrabold text-slate-900">${Number(product.price).toFixed(2)}</span>
+              <span className="text-2xl font-extrabold text-slate-900">
+                {formatINR(product.price)}
+              </span>
+              {product.original_price && product.original_price > product.price && (
+                <span className="text-sm text-slate-400 line-through">
+                  MRP {formatINR(product.original_price)}
+                </span>
+              )}
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                 {product.stock > 0 ? `In Stock (${product.stock} units)` : 'Out of Stock'}
               </span>
             </div>
 
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed mb-6">
+            <p className="text-xs md:text-sm text-slate-600 leading-relaxed mb-5">
               {product.description}
             </p>
 
             {/* Value Guarantees */}
-            <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-[11px] text-slate-600 mb-6">
+            <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-[11px] text-slate-600 mb-5">
               <div className="flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Express Ship</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>1-Yr Warranty</span>
+                <span>100% Genuine</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <RotateCcw className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>30-Day Return</span>
+                <span>7-Day Returns</span>
               </div>
             </div>
+
+            {/* Multi-Platform Partner Integrations (Amazon / Flipkart / Meesho) */}
+            {hasExternalPlatforms && (
+              <div className="mb-5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Store className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Compare & View on Partner Platforms</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-normal">Opens partner site</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {product.amazon_url && (
+                    <a
+                      href={product.amazon_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition shadow-2xs"
+                    >
+                      <span>Amazon</span>
+                      <ExternalLink className="w-3 h-3 text-amber-700" />
+                    </a>
+                  )}
+                  {product.flipkart_url && (
+                    <a
+                      href={product.flipkart_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 rounded-lg text-xs font-bold transition shadow-2xs"
+                    >
+                      <span>Flipkart</span>
+                      <ExternalLink className="w-3 h-3 text-blue-700" />
+                    </a>
+                  )}
+                  {product.meesho_url && (
+                    <a
+                      href={product.meesho_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-300 rounded-lg text-xs font-bold transition shadow-2xs"
+                    >
+                      <span>Meesho</span>
+                      <ExternalLink className="w-3 h-3 text-pink-700" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -119,7 +200,7 @@ export default function ProductDetailModal({ product, onClose, onBuyNow }) {
               </div>
             </div>
 
-            {/* Actions */}
+            {/* Actions for Direct Order with NovaStore */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleAddToCart}

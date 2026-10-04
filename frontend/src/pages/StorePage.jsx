@@ -10,9 +10,11 @@ import {
   Activity,
   Briefcase,
   Layers,
-  Check
+  Store,
+  ExternalLink
 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { formatINR } from '../utils/format';
 
 export default function StorePage({
   searchQuery,
@@ -23,8 +25,9 @@ export default function StorePage({
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPlatform, setSelectedPlatform] = useState('all'); // 'all', 'amazon', 'flipkart', 'meesho'
   const [sortBy, setSortBy] = useState('newest');
-  const [maxPrice, setMaxPrice] = useState(350);
+  const [maxPrice, setMaxPrice] = useState(10000);
   const [loading, setLoading] = useState(true);
 
   // Icon mapping for categories
@@ -43,7 +46,7 @@ export default function StorePage({
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, sortBy, maxPrice, searchQuery]);
+  }, [selectedCategory, selectedPlatform, sortBy, maxPrice, searchQuery]);
 
   async function fetchCategories() {
     try {
@@ -62,8 +65,9 @@ export default function StorePage({
     try {
       const params = new URLSearchParams();
       if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedPlatform !== 'all') params.append('platform', selectedPlatform);
       if (sortBy) params.append('sortBy', sortBy);
-      if (maxPrice < 350) params.append('maxPrice', maxPrice);
+      if (maxPrice < 10000) params.append('maxPrice', maxPrice);
       if (searchQuery.trim()) params.append('search', searchQuery.trim());
 
       const res = await fetch(`/api/products?${params.toString()}`);
@@ -87,32 +91,32 @@ export default function StorePage({
           <div className="max-w-xl text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-semibold mb-4">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>Fall 2026 Curated Gear & Lifestyle</span>
+              <span>Great Indian Festive Catalog • Amazon, Flipkart & Meesho Partnered</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white mb-4">
-              Engineered for living. <span className="text-blue-400">Crafted for style.</span>
+              Best deals in India. <span className="text-blue-400">Compare & Save Big.</span>
             </h1>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
-              Explore premium electronics, ergonomic home essentials, and crafted accessories with instant order fulfillment and live tracking.
+              Shop authentic electronics, trending ethnic wear, and home essentials in <strong>Indian Rupees (₹)</strong> with live order tracking or compare instantly on Amazon, Flipkart, and Meesho.
             </p>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
               <button
                 onClick={() => {
                   setSelectedCategory('electronics');
-                  window.scrollTo({ top: 450, behavior: 'smooth' });
+                  window.scrollTo({ top: 480, behavior: 'smooth' });
                 }}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-0.5"
               >
-                Shop Electronics
+                Explore Electronics
               </button>
               <button
                 onClick={() => {
-                  setSelectedCategory('all');
-                  window.scrollTo({ top: 450, behavior: 'smooth' });
+                  setSelectedCategory('fashion');
+                  window.scrollTo({ top: 480, behavior: 'smooth' });
                 }}
-                className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-white text-xs sm:text-sm font-semibold rounded-xl border border-slate-700 transition"
+                className="px-5 py-2.5 bg-pink-600/90 hover:bg-pink-600 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-lg shadow-pink-500/30 transition transform hover:-translate-y-0.5"
               >
-                View All Catalog
+                Meesho & Fashion Deals
               </button>
             </div>
           </div>
@@ -120,9 +124,12 @@ export default function StorePage({
           {/* Hero Feature Card */}
           <div className="w-full max-w-sm bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-2xl">
             <div className="flex items-center justify-between mb-3 text-xs text-blue-300 font-semibold">
-              <span>FEATURED HIGHLIGHT</span>
-              <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full text-[10px]">
-                In Stock
+              <span className="flex items-center gap-1.5">
+                <Store className="w-3.5 h-3.5" />
+                <span>TOP FESTIVE OFFER</span>
+              </span>
+              <span className="bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                50% OFF
               </span>
             </div>
             <div className="aspect-video w-full rounded-xl overflow-hidden mb-3">
@@ -134,10 +141,13 @@ export default function StorePage({
             </div>
             <h4 className="text-white font-bold text-sm">Aura Sound ANC Wireless Headphones</h4>
             <p className="text-slate-300 text-xs mt-1 line-clamp-2">
-              Hybrid active noise cancellation, 45mm dynamic drivers, up to 40 hours playtime.
+              45mm dynamic bass drivers, active hybrid noise cancellation, 40 hrs playtime.
             </p>
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
-              <span className="text-lg font-extrabold text-white">$199.99</span>
+              <div>
+                <span className="text-lg font-extrabold text-white">₹2,499</span>
+                <span className="text-xs text-slate-400 line-through ml-2">₹4,999</span>
+              </div>
               <button
                 onClick={() => {
                   const item = products.find(p => p.id === 1);
@@ -145,7 +155,7 @@ export default function StorePage({
                 }}
                 className="text-xs bg-white text-slate-900 font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-50 transition"
               >
-                Inspect Gear
+                View Details
               </button>
             </div>
           </div>
@@ -154,6 +164,56 @@ export default function StorePage({
 
       {/* Main Catalog Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Marketplace Platform Filter Bar */}
+        <div className="mb-6 p-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Store className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold uppercase tracking-wider">Marketplace Hub:</span>
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+            <button
+              onClick={() => setSelectedPlatform('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+                selectedPlatform === 'all'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'bg-white/10 text-slate-300 hover:bg-white/20'
+              }`}
+            >
+              All Stores
+            </button>
+            <button
+              onClick={() => setSelectedPlatform('amazon')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+                selectedPlatform === 'amazon'
+                  ? 'bg-amber-400 text-slate-900 font-bold shadow-sm'
+                  : 'bg-amber-400/20 text-amber-300 hover:bg-amber-400/30'
+              }`}
+            >
+              <span>Amazon Items</span>
+            </button>
+            <button
+              onClick={() => setSelectedPlatform('flipkart')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+                selectedPlatform === 'flipkart'
+                  ? 'bg-blue-500 text-white font-bold shadow-sm'
+                  : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+              }`}
+            >
+              <span>Flipkart Items</span>
+            </button>
+            <button
+              onClick={() => setSelectedPlatform('meesho')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 ${
+                selectedPlatform === 'meesho'
+                  ? 'bg-pink-500 text-white font-bold shadow-sm'
+                  : 'bg-pink-500/20 text-pink-300 hover:bg-pink-500/30'
+              }`}
+            >
+              <span>Meesho Items</span>
+            </button>
+          </div>
+        </div>
+
         {/* Category Pills Bar */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none">
           <button
@@ -165,7 +225,7 @@ export default function StorePage({
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>All Products</span>
+            <span>All Categories</span>
           </button>
 
           {categories.map(cat => {
@@ -206,22 +266,30 @@ export default function StorePage({
                 </button>
               </span>
             )}
+            {selectedPlatform !== 'all' && (
+              <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 text-xs px-2.5 py-1 rounded-lg border border-amber-200 capitalize">
+                <span>Platform: {selectedPlatform}</span>
+                <button onClick={() => setSelectedPlatform('all')} className="font-bold text-amber-900">
+                  ×
+                </button>
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            {/* Price Slider */}
+            {/* Price Slider in INR */}
             <div className="flex items-center gap-2 text-xs">
               <span className="text-slate-500 font-medium">Max:</span>
               <input
                 type="range"
-                min="30"
-                max="350"
-                step="10"
+                min="500"
+                max="10000"
+                step="250"
                 value={maxPrice}
                 onChange={e => setMaxPrice(Number(e.target.value))}
                 className="w-24 accent-blue-600 cursor-pointer"
               />
-              <span className="font-bold text-slate-800 w-10">${maxPrice}</span>
+              <span className="font-bold text-slate-800 w-16">{formatINR(maxPrice)}</span>
             </div>
 
             {/* Sort Dropdown */}
@@ -262,13 +330,14 @@ export default function StorePage({
               </div>
               <h3 className="text-base font-bold text-slate-800 mb-1">No matching products found</h3>
               <p className="text-xs text-slate-500 mb-6">
-                Try adjusting your search keyword, category filter, or price ceiling.
+                Try adjusting your search keyword, category, or platform filter.
               </p>
               <button
                 onClick={() => {
                   setSelectedCategory('all');
+                  setSelectedPlatform('all');
                   setSearchQuery('');
-                  setMaxPrice(350);
+                  setMaxPrice(10000);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white font-medium text-xs rounded-xl hover:bg-blue-700 transition"
               >

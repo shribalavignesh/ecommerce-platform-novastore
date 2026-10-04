@@ -38,12 +38,17 @@ function initializeDatabase() {
       title TEXT NOT NULL,
       description TEXT NOT NULL,
       price REAL NOT NULL,
+      original_price REAL,
       category TEXT NOT NULL,
       image TEXT NOT NULL,
       stock INTEGER NOT NULL DEFAULT 10,
       rating REAL DEFAULT 4.5,
       reviews_count INTEGER DEFAULT 20,
       featured INTEGER DEFAULT 0,
+      brand TEXT DEFAULT 'NovaStore',
+      amazon_url TEXT,
+      flipkart_url TEXT,
+      meesho_url TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -90,6 +95,13 @@ function initializeDatabase() {
       FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     );
   `);
+
+  // Non-destructive migrations for existing sqlite databases
+  try { db.exec('ALTER TABLE products ADD COLUMN original_price REAL;'); } catch (e) {}
+  try { db.exec('ALTER TABLE products ADD COLUMN brand TEXT DEFAULT "NovaStore";'); } catch (e) {}
+  try { db.exec('ALTER TABLE products ADD COLUMN amazon_url TEXT;'); } catch (e) {}
+  try { db.exec('ALTER TABLE products ADD COLUMN flipkart_url TEXT;'); } catch (e) {}
+  try { db.exec('ALTER TABLE products ADD COLUMN meesho_url TEXT;'); } catch (e) {}
 }
 
 initializeDatabase();
